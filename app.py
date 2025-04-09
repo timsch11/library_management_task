@@ -1,8 +1,13 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, make_response, request
 import configparser
 import requests
 import logging
 from flask_cors import CORS
+
+from psycopg2 import pool
+import psycopg2.extras
+
+from dotenv import dotenv_values
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 CORS(app)
@@ -19,6 +24,22 @@ logging.basicConfig(
 # Load the configuration from the config.ini file
 config = configparser.ConfigParser()
 config.read('config.ini')
+
+# read .env
+db_secrets = dotenv_values(".env")
+
+# setup connection pool for thread safety
+db_pool = pool.SimpleConnectionPool(
+    minconn=1,
+    maxconn=10,
+    dbname="library_management",
+    user=db_secrets["DB_USER"],
+    password=db_secrets["DB_PASSWORD"],
+    host="localhost",
+    port="5432"
+)
+
+del db_secrets
 
 # Get the API key and URL from the configuration
 try:
@@ -39,6 +60,277 @@ def home():
 @app.route('/viewer.html')
 def viewer():
     return render_template('viewer.html')
+
+@app.route('/api/borrower', methods=['GET'])
+def get_borrower():
+    """returns all borrowers when no name is specified"""
+    borrower_name = request.args.get('name', default=-1)
+
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        if borrower_name == -1:
+            cur.execute("SELECT * FROM Borrower;")
+        else:
+            cur.execute(f"SELECT * FROM Borrower WHERE name=%s", (borrower_name,))
+
+        borrowers = cur.fetchall()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        if borrowers == None:
+            return make_response({"error": "Database querry gave no results"}, 400)
+
+        # send books back to client (as a json)
+        return jsonify(borrowers)
+    
+    except Exception as exc:
+        return make_response({"error": str(exc)}, 500)
+
+@app.route('/api/author', methods=['GET'])
+def get_author():
+    """returns all authors when no id is specified"""
+    author_id = request.args.get('id', default=-1)
+
+    # avoid sql injection
+    try:
+        int(author_id)
+    except Exception as exc:
+        return make_response({"error": "invalid id header"}, 400)
+    
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        if author_id == -1:
+            cur.execute("SELECT * FROM Author;")
+        else:
+            cur.execute(f"SELECT * FROM Author WHERE id={author_id}")
+
+        authors = cur.fetchall()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        if authors == None:
+            return make_response({"error": "Database querry gave no results"}, 400)
+
+        # send books back to client (as a json)
+        return jsonify(authors)
+    
+    except Exception as exc:
+        return make_response({"error": str(exc)}, 500)
+    
+@app.route('/api/publisher', methods=['GET'])
+def get_publisher():
+    """returns all publishers when no id is specified"""
+    publisher_id = request.args.get('id', default=-1)
+
+    # avoid sql injection
+    try:
+        int(publisher_id)
+    except Exception as exc:
+        return make_response({"error": "invalid id header"}, 400)
+    
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        if publisher_id == -1:
+            cur.execute("SELECT * FROM Publisher;")
+        else:
+            cur.execute(f"SELECT * FROM Publisher WHERE id={publisher_id}")
+
+        publishers = cur.fetchall()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        if publishers == None:
+            return make_response({"error": "Database querry gave no results"}, 400)
+
+        # send books back to client (as a json)
+        return jsonify(publishers)
+    
+    except Exception as exc:
+        return make_response({"error": str(exc)}, 500)
+    
+@app.route('/api/genre', methods=['GET'])
+def get_genre():
+    """returns all genres when no id is specified"""
+    genre_id = request.args.get('id', default=-1)
+
+    # avoid sql injection
+    try:
+        int(genre_id)
+    except Exception as exc:
+        return make_response({"error": "invalid id header"}, 400)
+    
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        if genre_id == -1:
+            cur.execute("SELECT * FROM Genre;")
+        else:
+            cur.execute(f"SELECT * FROM Genre WHERE id={genre_id}")
+
+        genres = cur.fetchall()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        if genres == None:
+            return make_response({"error": "Database querry gave no results"}, 400)
+
+        # send books back to client (as a json)
+        return jsonify(genres)
+    
+    except Exception as exc:
+        return make_response({"error": str(exc)}, 500)
+    
+@app.route('/api/books', methods=['GET'])
+def get_books():
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        cur.execute("SELECT * FROM Books;")
+        books = cur.fetchall()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        if books == None:
+            return make_response({"error": "Database querry gave no results"}, 500)
+
+        # send books back to client (as a json)
+        return jsonify(books)
+    
+    except Exception as exc:
+        return make_response({"error": str(exc)}, 500)
+    
+@app.route('/api/removeBorrowers', methods=['POST'])
+def remove_borrowers():
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        cur.execute("DELETE FROM Borrower;")
+        conn.commit()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        return jsonify({"status": "success"})
+    
+    except Exception as exc:
+        return make_response({"error": str(exc)}, 500)
+    
+# In app.py
+@app.route('/api/borrow', methods=['POST'])
+def borrow():
+    # Get JSON data from request body instead of form data
+    data = request.json
+    
+    if not data:
+        return make_response({"error": "No JSON data provided"}, 400)
+    
+    book_id = data.get('bookid')
+    borrower_name = data.get('name')
+    borrow_date = data.get('borrowDate')
+    return_date = data.get('returnDate')
+    
+    logging.info(f"Borrowing book: {book_id} by {borrower_name}")
+    logging.info(f"Dates: borrow={borrow_date}, return={return_date}")
+
+    if not borrower_name:
+        return make_response({"error": "No borrower name is set"}, 400)
+    
+    if not book_id:
+        return make_response({"error": "No book id is set"}, 400)
+    
+    if not borrow_date:
+        return make_response({"error": "No borrowDate is set"}, 400)
+    
+    if not return_date:
+        return make_response({"error": "No returnDate is set"}, 400)
+        
+    # Rest of the function remains the same...
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        cur.execute("INSERT INTO Borrower (name) SELECT %s WHERE NOT EXISTS (SELECT 1 FROM Borrower WHERE name = %s)", (borrower_name, borrower_name))
+        cur.execute("UPDATE Books SET borrower = %s, borrowDate = %s, returnDate = %s WHERE id = %s", (borrower_name, borrow_date, return_date, book_id))
+        conn.commit()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        return jsonify({"status": "success"})
+    
+    except Exception as exc:
+        raise exc
+        return make_response({"error": str(exc)}, 500)
+    
+@app.route('/api/return', methods=['POST'])
+def return_book():
+    # Get JSON data from request body instead of form data
+    data = request.json
+    
+    if not data:
+        return make_response({"error": "No JSON data provided"}, 400)
+    
+    book_id = data.get('bookid')
+
+    if not book_id:
+        return make_response({"error": "No book id is set"}, 400)
+    
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        cur.execute("UPDATE Books SET borrowDate = NULL, returnDate = NULL WHERE id = %s RETURNING borrower;", (book_id, ))
+        response = cur.fetchall()
+        cur.execute("DELETE FROM Borrower WHERE name = %s;", ((response[0]["borrower"],)))
+        conn.commit()
+
+        cur.close()
+
+        # Return connection to pool
+        db_pool.putconn(conn)
+
+        return jsonify({"status": "success"})
+    
+    except Exception as exc:
+        raise exc
+        return make_response({"error": str(exc)}, 500)
+    
 
 # API route to fetch description from Gemini API
 @app.route('/api/description', methods=['GET'])
@@ -80,7 +372,7 @@ def get_description():
     }
 
     # Log the API URL and payload for debugging
-    logging.debug(f"API URL: {api_url_with_key}")
+    #logging.debug(f"API URL: {api_url_with_key}")
     logging.debug(f"Payload: {payload}")
 
     try:

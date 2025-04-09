@@ -1,0 +1,19 @@
+services:
+  postgres:
+    container_name: postgres-cont
+    image: postgres:latest
+    hostname: localhost
+    ports: 
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: library_management
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db_init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
