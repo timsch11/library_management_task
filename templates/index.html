@@ -11,6 +11,18 @@
 <body>
     <div class="container">
         <h1>Book Catalog</h1>
+        <!-- Book Search Form -->
+        <div class="search-container">
+        <form id="searchForm" class="mb-4">
+            <div class="input-group">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search books by title...">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Search</button>
+                <button class="btn btn-secondary" type="button" id="clearSearch">Clear</button>
+            </div>
+            </div>
+        </form>
+        </div>
         <table>
             <thead>
                 <tr>

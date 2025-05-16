@@ -5,4 +5,4 @@ Book:
 - only model title and book description as attribute types (unique to each book)
 - model Author, Publisher and Genre as entity types because they exist independantly of the book
 Attribute type description:
-- avoid generating the same description multiple times by storing the description for each entity -> cheaper
+- avoid generating the same description multiple times by storing the description for each entity -> cheaper (less gemini API calls)

@@ -294,7 +294,6 @@ def borrow():
         return jsonify({"status": "success"})
     
     except Exception as exc:
-        raise exc
         return make_response({"error": str(exc)}, 500)
     
 @app.route('/api/return', methods=['POST'])
@@ -315,9 +314,9 @@ def return_book():
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     try:
-        cur.execute("UPDATE Books SET borrowDate = NULL, returnDate = NULL WHERE id = %s RETURNING borrower;", (book_id, ))
-        response = cur.fetchall()
-        cur.execute("DELETE FROM Borrower WHERE name = %s;", ((response[0]["borrower"],)))
+        cur.execute("UPDATE Books SET borrowDate = NULL, returnDate = NULL, borrower = NULL WHERE id = %s RETURNING borrower;", (book_id, ))
+        # response = cur.fetchall()
+        # cur.execute("DELETE FROM Borrower WHERE name = %s;", ((response[0]["borrower"],)))
         conn.commit()
 
         cur.close()
@@ -328,7 +327,6 @@ def return_book():
         return jsonify({"status": "success"})
     
     except Exception as exc:
-        raise exc
         return make_response({"error": str(exc)}, 500)
     
 

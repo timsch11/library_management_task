@@ -36,7 +36,7 @@ window.onload = function () {
         const returnBookSelect = document.getElementById('returnBookId');
         
         // Retrieve borrowing data from LocalStorage
-        const borrowingData = JSON.parse(localStorage.getItem('borrowingData')) || {};
+        // const borrowingData = JSON.parse(localStorage.getItem('borrowingData')) || {};
 
         
         // Clear existing options
@@ -283,3 +283,42 @@ document.getElementById('clearDataBtn').addEventListener('click', function () {
         location.reload(); // Reload the page after clearing the data
     }
 });
+
+// Book search functionality
+document.getElementById('searchForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+    
+    if (!searchTerm) {
+        // If search is empty, show all books
+        showAllBooks();
+        return;
+    }
+    
+    // Get all book rows
+    const bookRows = document.querySelectorAll('#book-table tr[data-id]');
+    
+    // Filter books based on search term (title is in the second column)
+    bookRows.forEach(row => {
+        const title = row.cells[1].textContent.toLowerCase();
+        if (title.includes(searchTerm)) {
+            row.style.display = ''; // Show the row
+        } else {
+            row.style.display = 'none'; // Hide the row
+        }
+    });
+});
+
+// Clear search and show all books
+document.getElementById('clearSearch').addEventListener('click', function() {
+    document.getElementById('searchInput').value = '';
+    showAllBooks();
+});
+
+// Function to show all books
+function showAllBooks() {
+    const bookRows = document.querySelectorAll('#book-table tr[data-id]');
+    bookRows.forEach(row => {
+        row.style.display = ''; // Show all rows
+    });
+}

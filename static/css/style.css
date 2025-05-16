@@ -471,3 +471,15 @@ body.viewer {
         margin-top: 20px;
     }
 }
+
+.search-container {
+    margin: 20px 0;
+}
+
+#searchInput {
+    border-radius: 4px 0 0 4px;
+}
+
+#clearSearch {
+    margin-left: 5px;
+}
