@@ -8,7 +8,6 @@ window.onload = function () {
         fetch('/api/borrower').then(response => response.json())
     ])
     .then(([books, authors, publishers, genres, borrowers]) => {
-        console.log("Books data:", books);
         
         // Convert arrays to lookup objects
         const authorsMap = {};
@@ -62,8 +61,6 @@ window.onload = function () {
             
             // Check if book is borrowed
             const isBorrowed = borrowerName ? true : false;
-
-            console.log(book.borrowdate);
             
             // Populate row with book details
             row.innerHTML = `<td>${id}</td>
@@ -134,18 +131,6 @@ document.getElementById('borrowForm').addEventListener('submit', function (event
         row.cells[8].textContent = 'Borrowed';
         row.classList.add('borrowed');
 
-        // Save borrowing details to LocalStorage
-        /*const borrowingData = JSON.parse(localStorage.getItem('borrowingData')) || {};
-        borrowingData[bookId] = {
-            borrowerName: borrowerName,
-            borrowDate: borrowDate,
-            returnDate: returnDate.toISOString().split('T')[0]
-        };
-        localStorage.setItem('borrowingData', JSON.stringify(borrowingData));*/
-
-        console.log(borrowDate)
-        console.log(returnDate)
-
         // Format the returnDate as YYYY-MM-DD before sending
         const formattedReturnDate = returnDate.toISOString().split('T')[0];
 
@@ -168,9 +153,6 @@ document.getElementById('borrowForm').addEventListener('submit', function (event
               });
             }
             return response.json();
-          })
-          .then(data => {
-            console.log('Book borrowed successfully:', data);
           })
           .catch(error => {
             console.error('Error borrowing book:', error);

@@ -32,7 +32,6 @@ function getQueryParams() {
  * @param {string} entityName - The name of the entity (book, author, genre, etc.).
  */
 async function fetchGeminiDescription(type, entityName) {
-    console.log('Fetching description for:', entityName); // Debug
     try {
         const response = await fetch(`/api/description?type=${type}&name=${encodeURIComponent(entityName)}`, {
             method: 'GET',
@@ -40,7 +39,6 @@ async function fetchGeminiDescription(type, entityName) {
                 'Content-Type': 'application/json'
             }
         });
-        console.log('Fetch response status:', response.status); // Debug
 
         if (response.status === 400) {
             throw new Error('Invalid request. Entity name is missing.');
@@ -51,7 +49,6 @@ async function fetchGeminiDescription(type, entityName) {
         }
 
         const data = await response.json();
-        console.log('Received data:', data); // Debug
         const descriptionMarkdown = data.description || 'No description available.';
 
         // Convert Markdown to HTML using Marked.js
@@ -79,14 +76,14 @@ async function displayEntity(type, id) {
             return;
         }
         
+        console.log(data);
         // Get the entity from the response data
-        console.log(data[0]);
         const entity = data[0];
         const entityType = type.charAt(0).toUpperCase() + type.slice(1);
         
         // Extract entity name for description
         let entityName = '';
-        if (type === 'books') {
+        if (type.toLowerCase() === 'books') {
             entityName = entity.title;
         } else {
             entityName = entity.name;
@@ -97,7 +94,6 @@ async function displayEntity(type, id) {
         
         // Add all properties to the list
         for (const [key, value] of Object.entries(entity)) {
-            console.log(key);
             if (key === 'id' || key === "description") continue; // skip id and description
             
             // Handle related entities
@@ -158,7 +154,7 @@ async function displayEntity(type, id) {
         
         // Display the content
         document.getElementById('content').innerHTML = htmlContent;
-        
+
         // Fetch and display the Gemini description
         if (entityName) {
             fetchGeminiDescription(type, entityName);

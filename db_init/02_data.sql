@@ -25,6 +25,6 @@ INSERT INTO Borrower (name) VALUES
 -- Insert Books
 INSERT INTO Books (id, title, description, present, borrower, author, publisher, genre) VALUES
 (1, 'Foundation', '', FALSE, 'Alice Johnson', 1, 1, 1),
-(2, 'Harry Potter and the Sorcerer`s Stone', '', TRUE, NULL, 2, 1, 2),
+(2, 'Harry Potter and the Sorcerers Stone', '', TRUE, NULL, 2, 1, 2),
 (3, 'Outliers', '', TRUE, NULL, 3, 2, 3),
 (4, 'The Hobbit', '', FALSE, 'Bob Smith', 2, 3, 2);

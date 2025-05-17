@@ -1,0 +1,9 @@
+CREATE CONSTRAINT FOR (genre:Genre) REQUIRE genre.id IS UNIQUE;
+
+CREATE CONSTRAINT FOR (publisher:Publisher) REQUIRE publisher.id IS UNIQUE;
+
+CREATE CONSTRAINT FOR (author:Author) REQUIRE author.id IS UNIQUE;
+
+CREATE CONSTRAINT FOR (borrower:Borrower) REQUIRE borrower.id IS UNIQUE;
+
+CREATE CONSTRAINT FOR (book:Book) REQUIRE book.id IS UNIQUE;
