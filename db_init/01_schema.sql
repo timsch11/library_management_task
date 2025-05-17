@@ -1,19 +1,19 @@
 CREATE TABLE Genre (
     id SERIAL PRIMARY KEY,
     name VARCHAR(40),
-    description VARCHAR(1000)
+    description VARCHAR(10000)
 );
 
 CREATE TABLE Publisher (
     id SERIAL PRIMARY KEY,
     name VARCHAR(40),
-    description VARCHAR(1000)
+    description VARCHAR(10000)
 );
 
 CREATE TABLE Author (
     id SERIAL PRIMARY KEY,
     name VARCHAR(40),
-    description VARCHAR(1000)
+    description VARCHAR(10000)
 );
 
 CREATE TABLE Borrower (
@@ -23,7 +23,7 @@ CREATE TABLE Borrower (
 CREATE TABLE Books (
     id INTEGER PRIMARY KEY,
     title VARCHAR(80),
-    description VARCHAR(1000),
+    description VARCHAR(10000),
     present BOOLEAN DEFAULT 'TRUE',
     borrower VARCHAR(40),
     author INTEGER,

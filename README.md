@@ -10,6 +10,6 @@ Basic Library Management System
 - specify DB_USER and DB_PASSWORD in a .env file and run docker-compose for db setup.
 notable implementation enhancements:
 - added a book search form (client side)
-- use a connection pool for increased efficiency
+- use of a connection pool for increased efficiency
 
 

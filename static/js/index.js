@@ -67,10 +67,10 @@ window.onload = function () {
             
             // Populate row with book details
             row.innerHTML = `<td>${id}</td>
-                             <td><a href="viewer.html?type=book&id=${id}" target="_blank">${title}</a></td>
-                             <td><a href="viewer.html?type=author&id=${authorId}" target="_blank">${authorName}</a></td>
-                             <td><a href="viewer.html?type=publisher&id=${publisherId}" target="_blank">${publisherName}</a></td>
-                             <td><a href="viewer.html?type=genre&id=${genreId}" target="_blank">${genreName}</a></td>
+                             <td><a href="viewer.html?type=Books&id=${id}" target="_blank">${title}</a></td>
+                             <td><a href="viewer.html?type=Author&id=${authorId}" target="_blank">${authorName}</a></td>
+                             <td><a href="viewer.html?type=Publisher&id=${publisherId}" target="_blank">${publisherName}</a></td>
+                             <td><a href="viewer.html?type=Genre&id=${genreId}" target="_blank">${genreName}</a></td>
                              <td>${isBorrowed ? borrowerName : ''}</td>
                              <td>${isBorrowed ? book.borrowdate : ''}</td>
                              <td>${isBorrowed ? book.returndate : ''}</td>
@@ -273,14 +273,13 @@ document.getElementById('returnForm').addEventListener('submit', function (event
 // Clear borrowing data from localStorage
 document.getElementById('clearDataBtn').addEventListener('click', function () {
     if (confirm('Are you sure you want to clear all borrowing data? This action cannot be undone.')) {
-        //localStorage.removeItem('borrowingData'); // Only remove borrowing data
         fetch("/api/removeBorrowers", {
             method: "POST",
             headers: {
               "Content-type": "application/json; charset=UTF-8"
-            }
-          });
-        location.reload(); // Reload the page after clearing the data
+            }}).finally(() => {
+                location.reload(); // Reload the page after clearing the data
+        });
     }
 });
 

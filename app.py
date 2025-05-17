@@ -6,6 +6,7 @@ from flask_cors import CORS
 
 from psycopg2 import pool
 import psycopg2.extras
+from psycopg2 import sql
 
 from dotenv import dotenv_values
 
@@ -333,12 +334,44 @@ def return_book():
 # API route to fetch description from Gemini API
 @app.route('/api/description', methods=['GET'])
 def get_description():
+    entity_type = request.args.get('type')
     entity_name = request.args.get('name')
     logging.debug(f"Received request for entity name: {entity_name}")  # Changed to DEBUG
 
+    
     if not entity_name:
         logging.warning("Missing entity name in request.")
         return jsonify({'error': 'Missing entity name'}), 400
+
+    ### look into db for cached description
+    # borrow connection from pool and get cursor
+    conn = db_pool.getconn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        if entity_type == "Books":
+            cur.execute(sql.SQL("SELECT description FROM {} WHERE title = %s;").format(
+                sql.Identifier(entity_type.lower())), (entity_name,))
+        else:
+            cur.execute(sql.SQL("SELECT description FROM {} WHERE name = %s;").format(
+                sql.Identifier(entity_type.lower())), (entity_name,))
+        
+        data = cur.fetchall()
+
+        description = data[0]["description"]
+
+        # consider that an actual description
+        if len(description) > 10:
+            logging.info("Found existing description in db cache.")
+
+            # Return connection to pool
+            db_pool.putconn(conn)
+
+            return jsonify({'description': description})
+    
+    except Exception as exc:
+        logging.exception("Exception")
+        return make_response({"error": str(exc)}, 500)
 
     if not GEMINI_API_URL or not GEMINI_API_KEY:
         logging.error("Gemini API configuration missing.")
@@ -396,6 +429,20 @@ def get_description():
         # Extract the description from the response
         description = response_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'No description available.')
         logging.debug(f"Fetched description: {description}")  # Changed to DEBUG
+
+        if entity_type == "Books":
+            cur.execute(sql.SQL("UPDATE {} SET description = %s WHERE title = %s;").format(
+                sql.Identifier(entity_type.lower())), (description, entity_name))
+        else:
+            cur.execute(sql.SQL("UPDATE {} SET description = %s WHERE name = %s;").format(
+                sql.Identifier(entity_type.lower())), (description, entity_name))
+            
+        conn.commit()
+
+        logging.info("Successfully stored description in db.")
+
+        # Return connection to pool
+        db_pool.putconn(conn)
 
         return jsonify({'description': description})
 
