@@ -18,8 +18,8 @@ INSERT INTO Author (name, description) VALUES
 
 -- Insert Borrowers
 INSERT INTO Borrower (name) VALUES
-('Alice Johnson'),
-('Bob Smith'),
+('Max Mustermann'),
+('Tim Schönbrod'),
 ('Charlie Nguyen');
 
 -- Insert Books
