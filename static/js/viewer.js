@@ -78,15 +78,13 @@ async function displayEntity(type, id) {
             document.getElementById('content').innerHTML = '<p>Entity not found.</p>';
             return;
         }
-        
-        // Get the entity from the response data
-        console.log(data[0]);
+
         const entity = data[0];
         const entityType = type.charAt(0).toUpperCase() + type.slice(1);
         
         // Extract entity name for description
         let entityName = '';
-        if (type === 'books') {
+        if (type.toLowerCase() === 'books') {
             entityName = entity.title;
         } else {
             entityName = entity.name;

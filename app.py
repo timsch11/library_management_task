@@ -186,7 +186,7 @@ def get_genre():
         if genre_id == -1:
             cur.execute("SELECT * FROM Genre;")
         else:
-            cur.execute(f"SELECT * FROM Genre WHERE id={genre_id}")
+            cur.execute(f"SELECT * FROM Genre WHERE id=%s;", (genre_id, ))
 
         genres = cur.fetchall()
 
@@ -206,12 +206,26 @@ def get_genre():
     
 @app.route('/api/books', methods=['GET'])
 def get_books():
+    book_id = request.args.get('id', default=-1)
+
+    # avoid sql injection
+    try:
+        book_id = int(book_id)
+
+    except Exception as exc:
+        return make_response({"error": "invalid id header"}, 400)
+    
     # borrow connection from pool and get cursor
     conn = db_pool.getconn()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     try:
-        cur.execute("SELECT * FROM Books;")
+        if book_id == -1:
+            cur.execute("SELECT * FROM Books ORDER BY id ASC;")
+
+        else: 
+            cur.execute("SELECT * FROM Books WHERE id = %s ORDER BY id ASC;", (book_id, ))
+
         books = cur.fetchall()
 
         cur.close()
