@@ -383,16 +383,20 @@ def get_description():
         else:
             query = f"MATCH (el:{entity_type}) WHERE el.name = $entity_name RETURN el.description AS description;"
         
-        data = db.run_query(query, {'entity_name': entity_name})
-        logging.info("length", len(data), data)
-        description = data[0]["description"]
+        try:    
+            data = db.run_query(query, {'entity_name': entity_name})
+            logging.info("length", len(data), data)
+            description = data[0]["description"]
 
-        # consider that an actual description
-        if len(description) > 10:
-            logging.info("Found existing description in db cache.")
+            # consider that an actual description
+            if len(description) > 10:
+                logging.info("Found existing description in db cache.")
 
-            return jsonify({'description': description})
-    
+                return jsonify({'description': description})
+            
+        except Exception as exc:
+            pass
+        
     except Exception as exc:
         logging.exception("Exception")
         return make_response({"error": str(exc)}, 500)
